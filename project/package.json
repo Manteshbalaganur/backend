@@ -1,0 +1,23 @@
+{
+  "name": "package.json",
+  "version": "1.0.0",
+  "description": "rest apis",
+  "main": "index.js",
+  "scripts": {
+    "start": "index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Manteshbalaganur/backend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Manteshbalaganur/backend/issues"
+  },
+  "homepage": "https://github.com/Manteshbalaganur/backend#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
