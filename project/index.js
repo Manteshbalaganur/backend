@@ -1,8 +1,38 @@
 const express=require("express");
 const fs=require("fs"); // to file append
+const mongoose=require("mongoose");// mogo db connection
 let users=require("./MOCK_DATA.json");// data import 
 const app=express();
 let PORT=8000;
+// db connection
+mongoose.connect("mongodb://localhost:27017/mahantesh").then(()=>{
+    console.log("db connected successfully");
+}).catch((err)=>{
+    console.log("db connection failed",err);
+});
+//SCHEMA
+const userSchema=new mongoose.Schema({
+    firstName:{
+      type: String,
+      required: true,
+    },
+    lastName: {
+      type:String,
+    },
+    email:{
+      type:String,
+      required:true,
+      unique:true,
+    },  
+    jobTitle:{
+      type:String,
+    },   
+    gender:{
+      type:String,
+    },
+  });
+
+const User=new mongoose.model("user",userSchema); //USER MODEL
 
 // middleware - plugins 
 app.use(express.urlencoded({extended:false}));
@@ -32,46 +62,33 @@ app.get("/users",(req,res)=>{
 })
 
 
-app.post("/api/users",(req,res)=>{
+app.post("/api/users", async (req,res)=>{
     //create users
     const body=req.body;
-    users.push({ ...body,id:users.length+1});
-    fs.writeFile("./MOCK_DATA.json",JSON.stringify(users),(err,data)=>{
-        return res.status(201).json({status:"success",id:users.length});
-    })
-})
+    if(
+      !body|| 
+      !body.first_name || 
+      !body.last_name || 
+      !body.email||
+      !body.gender ||
+      !body.job_title
+    )
+    {
+        return res.status(400).json({msg:"all fields are required"});
+    }
+   const result=  await User.create({
+        firstName:body.first_name,
+        lastName:body.last_name,
+        email:body.email, 
+        gender:body.gender, 
+        jobTitle:body.job_title,
 
-app.patch("/api/users/:id", (req, res) => {
-  const id = parseInt(req.params.id);
-  const updates = req.body; // e.g. { age: 21 }
-  
-  let user = users.find(u => u.id === id);
-  if (!user) return res.status(404).send("User not found");
+    });
+    console.log("result",result);
 
-  Object.assign(user, updates);  // update only given fields
-  res.json(user);
+    return res.status(201).json({msg:"success"});
 });
 
-app.delete("/api/users/:id", (req, res) => {
-  const id = Number(req.params.id);
-  users = users.filter(u => u.id !== id);
-  res.send("User deleted");
-});
-
-app.delete("/api/users/:id", (req, res) => {
-  const id = Number(req.params.id);
-
-  const index = users.findIndex(u => u.id === id);
-  if (index === -1) return res.status(404).send("User not found");
-
-  users.splice(index, 1); // remove from array
-
-  // overwrite JSON file with updated users
-  fs.writeFile("./MOCK_DATA.json", JSON.stringify(users, null, 2), (err) => {
-    if (err) return res.status(500).send("Error writing file");
-    res.send("User deleted successfully ");
-  });
-});
 
 // dynamically select kar sakte hai data koo 
 app.get("/api/users/:id",(req,res)=>{
